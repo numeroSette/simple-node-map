@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Google Maps JavaScript API v3 Example: Overlay Removal</title>
+    <style>
+      #map-canvas {
+        width: 600px;
+        height: 500px
+      }
+    </style>
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      var map;
+      var markers = [];
+     
+      
+      function initialize() {
+        var haightAshbury = new google.maps.LatLng(-25.476714,-49.323274);
+        var mapOptions = {
+          zoom: 17,
+          center: haightAshbury,
+          mapTypeId: google.maps.MapTypeId.ROADMAP
+        };
+        map = new google.maps.Map(document.getElementById('map-canvas'),
+            mapOptions);
+      }
+
+      // Add a marker to the map and push to the array.
+      function addMarker(location) {
+        marker = new google.maps.Marker({
+          position: location,
+          map: map
+        });
+        markers.push(marker);
+      }
+
+
+      $(function(){
+          var iosocket = io.connect();
+
+          iosocket.on('connect', function () {
+
+              iosocket.on('addRouts', function(locations) {
+            	  locations = locations.split(";");
+            	  for( var i=0;i <= locations.length - 1;i++ ){
+            		  position = locations[i].split(",");
+            		  addMarker(new google.maps.LatLng(position[0],position[1])); 
+            	  }
+            	  
+              });
+    
+              iosocket.on('disconnect', function() {
+                  $('#incomingChatMessages').html('Disconnected');
+              });
+              
+          });
+          
+          $('#btn').click(function() {
+          	var data = $('#addrota').serialize();
+          	
+				$.ajax({
+				
+					type: 'post',
+					
+					data: data,
+					
+					url:'http://netoramalho/testes/node/addrotas.php',
+					
+					success: function(retorno){
+									
+					}
+				
+				});
+          });
+          
+      });
+      
+      google.maps.event.addDomListener(window, 'load', initialize);
+    </script>
+  </head>
+  <body>
+	<form method="post" id="addrota">
+		rota: <input type="text" name="rota">
+		<input type="button" id="btn" value="enviar Rota">
+	</form>
+	<div id="incomingChatMessages"></div>
+    <div id="map-canvas"></div>
+  </body>
+</html>
